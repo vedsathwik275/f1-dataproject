@@ -9,6 +9,9 @@ A comprehensive Formula 1 data analysis and visualization tool that leverages bo
 - **Driver Comparisons**: Compare two drivers head-to-head with lap time and sector time differences.
 - **Qualifying Analysis**: Analyze qualifying sessions with progression through Q1, Q2, and Q3, and lap time improvements.
 - **Interactive Terminal Interface**: Easy-to-use command-line interface for accessing all features.
+- **Multi-Season Analysis (2021-2025)**: Analyze historical performance across multiple seasons for drivers, teams, and circuits.
+- **Season Comparison**: Compare championship standings and results across seasons.
+- **Detailed Calendar View**: View complete race calendars for any season with upcoming race information.
 
 ## Installation
 
@@ -38,93 +41,71 @@ python run_f1_analyzer.py
 - `qualifying_analysis` - Analyze qualifying session
 - `list_races` - List available races for a given year
 - `list_drivers` - List available drivers for a given year
+- `multi_season_driver` - Analyze a driver's performance across multiple seasons (2021-2025)
+- `multi_season_team` - Analyze a team's performance across multiple seasons (2021-2025)
+- `circuit_history` - Analyze a circuit's history across multiple seasons (2021-2025)
+- `season_comparison` - Compare championship standings across multiple seasons (2021-2025)
+- `get_calendar` - Display the full F1 calendar for a specified year
 - `help` - Show the help message
 - `exit` - Exit the application
 
-### Available Drivers (2023 Season)
+### Available Drivers (2025 Season)
 
-The following is a list of common driver codes and their respective teams for the 2023 season:
-
-| Driver Code | Driver Name           | Team                |
-|-------------|----------------------|---------------------|
-| VER         | Max Verstappen       | Red Bull Racing     |
-| PER         | Sergio Perez         | Red Bull Racing     |
-| HAM         | Lewis Hamilton       | Mercedes           |
-| RUS         | George Russell       | Mercedes           |
-| LEC         | Charles Leclerc      | Ferrari            |
-| SAI         | Carlos Sainz         | Ferrari            |
-| ALO         | Fernando Alonso      | Aston Martin       |
-| STR         | Lance Stroll         | Aston Martin       |
-| NOR         | Lando Norris         | McLaren            |
-| PIA         | Oscar Piastri        | McLaren            |
-| GAS         | Pierre Gasly         | Alpine             |
-| OCO         | Esteban Ocon         | Alpine             |
-| HUL         | Nico Hulkenberg      | Haas F1 Team       |
-| MAG         | Kevin Magnussen      | Haas F1 Team       |
-| BOT         | Valtteri Bottas      | Alfa Romeo         |
-| ZHO         | Guanyu Zhou          | Alfa Romeo         |
-| TSU         | Yuki Tsunoda         | AlphaTauri         |
-| DEV         | Nyck de Vries        | AlphaTauri/RB       |
-| RIC         | Daniel Ricciardo     | AlphaTauri/RB       |
-| ALB         | Alexander Albon      | Williams           |
-| SAR         | Logan Sargeant       | Williams           |
-
-### Available Drivers (2024 Season)
-
-The following is a list of common driver codes and their respective teams for the 2024 season:
+The following is a list of common driver codes and their respective teams for the 2025 season:
 
 | Driver Code | Driver Name           | Team                |
 |-------------|----------------------|---------------------|
 | VER         | Max Verstappen       | Red Bull Racing     |
 | PER         | Sergio Perez         | Red Bull Racing     |
-| HAM         | Lewis Hamilton       | Mercedes           |
-| RUS         | George Russell       | Mercedes           |
+| HAM         | Lewis Hamilton       | Ferrari             |
+| RUS         | George Russell       | Mercedes            |
 | LEC         | Charles Leclerc      | Ferrari            |
-| SAI         | Carlos Sainz         | Ferrari            |
+| SAI         | Carlos Sainz         | Williams           |
 | ALO         | Fernando Alonso      | Aston Martin       |
 | STR         | Lance Stroll         | Aston Martin       |
 | NOR         | Lando Norris         | McLaren            |
 | PIA         | Oscar Piastri        | McLaren            |
 | GAS         | Pierre Gasly         | Alpine             |
-| OCO         | Esteban Ocon         | Alpine             |
-| HUL         | Nico Hulkenberg      | Haas F1 Team       |
+| OCO         | Esteban Ocon         | Haas F1 Team       |
+| HUL         | Nico Hulkenberg      | Kick Sauber        |
 | MAG         | Kevin Magnussen      | Haas F1 Team       |
 | BOT         | Valtteri Bottas      | Kick Sauber        |
 | ZHO         | Guanyu Zhou          | Kick Sauber        |
 | TSU         | Yuki Tsunoda         | RB                 |
 | RIC         | Daniel Ricciardo     | RB                 |
 | ALB         | Alexander Albon      | Williams           |
-| SAR         | Logan Sargeant       | Williams           |
 | BEA         | Franco Colapinto     | Williams           |
+| BEA         | Andrea Kimi Antonelli| Mercedes           |
+| LAW         | Liam Lawson          | RB                 |
 
-### 2024 Race Calendar
+### 2025 Race Calendar
 
 | Round | Grand Prix Name        | Circuit                | Date        |
 |-------|------------------------|------------------------|-------------|
-| 1     | Bahrain                | Bahrain International  | Mar 02      |
-| 2     | Saudi Arabia           | Jeddah                 | Mar 09      |
-| 3     | Australia              | Albert Park           | Mar 24      |
-| 4     | Japan                  | Suzuka                | Apr 07      |
-| 5     | China                  | Shanghai              | Apr 21      |
-| 6     | Miami                  | Miami International   | May 05      |
-| 7     | Emilia Romagna (Imola) | Autodromo Enzo e Dino Ferrari | May 19 |
-| 8     | Monaco                 | Circuit de Monaco     | May 26      |
-| 9     | Canada                 | Circuit Gilles Villeneuve | Jun 09  |
-| 10    | Spain                  | Circuit de Barcelona-Catalunya | Jun 23 |
-| 11    | Austria                | Red Bull Ring         | Jun 30      |
-| 12    | Britain                | Silverstone           | Jul 07      |
-| 13    | Hungary                | Hungaroring           | Jul 21      |
-| 14    | Belgium                | Spa-Francorchamps     | Jul 28      |
-| 15    | Netherlands            | Zandvoort             | Aug 25      |
-| 16    | Italy                  | Monza                 | Sep 01      |
-| 17    | Azerbaijan             | Baku City Circuit     | Sep 15      |
-| 18    | Singapore              | Marina Bay            | Sep 22      |
-| 19    | United States          | Circuit of the Americas | Oct 20    |
-| 20    | Mexico                 | Autodromo Hermanos Rodriguez | Oct 27 |
-| 21    | Brazil                 | Interlagos            | Nov 03      |
-| 22    | Las Vegas              | Las Vegas Street Circuit | Nov 23   |
-| 23    | Qatar                  | Lusail International  | Dec 01      |
-| 24    | Abu Dhabi              | Yas Marina            | Dec 08      |
+| 1     | Australian Grand Prix  | Albert Park           | Mar 16      |
+| 2     | Chinese Grand Prix     | Shanghai              | Mar 23      |
+| 3     | Japanese Grand Prix    | Suzuka                | Apr 06      |
+| 4     | Bahrain Grand Prix     | Bahrain International | Apr 13      |
+| 5     | Saudi Arabian Grand Prix| Jeddah               | Apr 20      |
+| 6     | Miami Grand Prix       | Miami International   | May 04      |
+| 7     | Emilia Romagna Grand Prix| Imola               | May 18      |
+| 8     | Monaco Grand Prix      | Circuit de Monaco     | May 25      |
+| 9     | Spanish Grand Prix     | Circuit de Barcelona-Catalunya | Jun 01 |
+| 10    | Canadian Grand Prix    | Circuit Gilles Villeneuve | Jun 15  |
+| 11    | Austrian Grand Prix    | Red Bull Ring         | Jun 29      |
+| 12    | British Grand Prix     | Silverstone           | Jul 06      |
+| 13    | Belgian Grand Prix     | Spa-Francorchamps     | Jul 27      |
+| 14    | Hungarian Grand Prix   | Hungaroring           | Aug 03      |
+| 15    | Dutch Grand Prix       | Zandvoort             | Aug 31      |
+| 16    | Italian Grand Prix     | Monza                 | Sep 07      |
+| 17    | Azerbaijan Grand Prix  | Baku City Circuit     | Sep 21      |
+| 18    | Singapore Grand Prix   | Marina Bay            | Oct 05      |
+| 19    | United States Grand Prix| Circuit of the Americas | Oct 19    |
+| 20    | Mexico City Grand Prix | Autodromo Hermanos Rodriguez | Oct 26 |
+| 21    | São Paulo Grand Prix   | Interlagos            | Nov 09      |
+| 22    | Las Vegas Grand Prix   | Las Vegas Street Circuit | Nov 22   |
+| 23    | Qatar Grand Prix       | Lusail International  | Nov 30      |
+| 24    | Abu Dhabi Grand Prix   | Yas Marina            | Dec 07      |
 
 ### Session Types
 
@@ -156,7 +137,8 @@ backend/
     ├── fastf1_client.py   # FastF1 API client
     ├── openf1_client.py   # OpenF1 API client
     ├── data_processor.py  # Data processing utilities
-    └── visualizations.py  # Visualization utilities
+    ├── visualizations.py  # Visualization utilities
+    └── historical_data.py # Multi-season analysis module
 ```
 
 ## Data Sources
@@ -168,6 +150,7 @@ FastF1 is a Python package that provides access to Formula 1 session data, inclu
 - Car data (RPM, gear)
 - Weather data
 - Track position
+- Historical data from past seasons
 
 ### OpenF1 API
 OpenF1 is a free and open API that provides access to Formula 1 data, including:
@@ -185,7 +168,7 @@ Get detailed performance analysis for a specific driver in a race:
 2. Enter `driver_performance`
 3. Follow the prompts:
    - Enter driver code (e.g., 'VER', 'HAM')
-   - Enter year (e.g., '2024', '2023')
+   - Enter year (e.g., '2025', '2024')
    - Enter Grand Prix name (e.g., 'Bahrain', 'Monaco')
    - Enter session type (e.g., 'R' for race, 'Q' for qualifying)
 
@@ -200,7 +183,7 @@ Analyze a complete race:
 1. Run `python run_f1_analyzer.py`
 2. Enter `race_analysis`
 3. Follow the prompts:
-   - Enter year (e.g., '2024', '2023')
+   - Enter year (e.g., '2025', '2024')
    - Enter Grand Prix name (e.g., 'Bahrain', 'Monaco')
 
 Example output will show:
@@ -215,7 +198,7 @@ Compare two drivers head-to-head:
 3. Follow the prompts:
    - Enter first driver code (e.g., 'VER')
    - Enter second driver code (e.g., 'HAM')
-   - Enter year (e.g., '2024', '2023')
+   - Enter year (e.g., '2025', '2024')
    - Enter Grand Prix name (e.g., 'Bahrain', 'Monaco')
    - Enter session type (e.g., 'R' for race, 'Q' for qualifying)
 
@@ -230,7 +213,7 @@ Analyze a qualifying session:
 1. Run `python run_f1_analyzer.py`
 2. Enter `qualifying_analysis`
 3. Follow the prompts:
-   - Enter year (e.g., '2024', '2023')
+   - Enter year (e.g., '2025', '2024')
    - Enter Grand Prix name (e.g., 'Bahrain', 'Monaco')
 
 Example output will show:
@@ -238,19 +221,83 @@ Example output will show:
 - Session progression (Q1 → Q2 → Q3)
 - Lap time improvements between sessions
 
+### Multi-Season Driver Analysis
+Analyze a driver's performance across multiple seasons (2021-2025):
+1. Run `python run_f1_analyzer.py`
+2. Enter `multi_season_driver`
+3. Follow the prompts:
+   - Enter driver code (e.g., 'VER', 'HAM')
+   - Optionally filter by Grand Prix name
+
+Example output will show:
+- Season-by-season performance metrics
+- Total wins, podiums, and points across seasons
+- Best and worst performing seasons
+- Performance trends over time
+
+### Team Performance Analysis
+Analyze a team's performance across multiple seasons (2021-2025):
+1. Run `python run_f1_analyzer.py`
+2. Enter `multi_season_team`
+3. Follow the prompt:
+   - Enter team name (e.g., 'Red Bull Racing', 'Mercedes')
+
+Example output will show:
+- Season-by-season team performance
+- Driver lineups by season
+- Championship position trends
+- Win and podium statistics
+
+### Circuit History Analysis
+Analyze the history of a specific circuit across seasons (2021-2025):
+1. Run `python run_f1_analyzer.py`
+2. Enter `circuit_history`
+3. Follow the prompt:
+   - Enter Grand Prix name (e.g., 'Monaco', 'Monza')
+
+Example output will show:
+- Winners for each season
+- Pole positions and fastest laps
+- Most successful drivers at the circuit
+- Podium results for each year
+
+### Championship Comparison
+Compare championship results across seasons (2021-2025):
+1. Run `python run_f1_analyzer.py`
+2. Enter `season_comparison`
+
+Example output will show:
+- Driver champions by year
+- Constructor champions by year
+- Points comparisons
+- Championship trends
+
+### Get F1 Calendar
+View the complete F1 calendar for any year:
+1. Run `python run_f1_analyzer.py`
+2. Enter `get_calendar`
+3. Follow the prompt:
+   - Enter year (e.g., '2025', '2024')
+
+Example output will show:
+- Complete race schedule with dates and locations
+- Upcoming race information for current season
+- Session schedule for the next race
+- Circuit and country information
+
 ### List Available Races
 Get a list of all races for a specific year:
 1. Run `python run_f1_analyzer.py`
 2. Enter `list_races`
 3. Follow the prompt:
-   - Enter year (e.g., '2024', '2023')
+   - Enter year (e.g., '2025', '2024')
 
 ### List Available Drivers
 Get a list of all drivers for a specific year:
 1. Run `python run_f1_analyzer.py`
 2. Enter `list_drivers`
 3. Follow the prompts:
-   - Enter year (e.g., '2024', '2023')
+   - Enter year (e.g., '2025', '2024')
    - Enter Grand Prix name (optional, press Enter to use the most recent race)
 
 ## Visualization Output
@@ -274,6 +321,8 @@ All visualizations are saved to the `assets/visualizations/` directory with desc
 4. **Package not found errors**: Make sure you've installed all dependencies by running `pip install -r requirements.txt`.
 
 5. **"No module named 'fastf1'"**: Ensure you've activated your virtual environment before running the application.
+
+6. **Slow data loading for historical analysis**: Multi-season analysis can be data-intensive. First-time analysis will be slower as data is cached. Subsequent runs will be faster.
 
 ## Contributing
 
