@@ -1,0 +1,144 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&family=Roboto:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 7%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 97% 44%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 80%;
+
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 97% 44%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 97% 44%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-f1-charcoal text-f1-silver font-roboto antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-titillium font-bold tracking-tight;
+  }
+  h1 {
+    @apply text-3xl md:text-4xl;
+  }
+  h2 {
+    @apply text-2xl md:text-3xl;
+  }
+  h3 {
+    @apply text-xl md:text-2xl;
+  }
+  h4 {
+    @apply text-lg md:text-xl;
+  }
+}
+
+@layer components {
+  .card-glass {
+    @apply bg-f1-dark/80 backdrop-blur-md border border-f1-gray/30 rounded-lg shadow-lg;
+  }
+  
+  .highlight-red {
+    @apply text-f1-red font-medium;
+  }
+  
+  .btn-primary {
+    @apply bg-f1-red hover:bg-f1-darkred text-white font-medium px-4 py-2 rounded transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-f1-red/50;
+  }
+  
+  .btn-secondary {
+    @apply bg-f1-gray hover:bg-f1-dark text-white font-medium px-4 py-2 rounded transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-f1-gray/50;
+  }
+  
+  .input-field {
+    @apply bg-f1-dark border border-f1-gray/50 rounded-md px-3 py-2 text-white placeholder-f1-lightgray/50 focus:outline-none focus:ring-2 focus:ring-f1-red/30 transition-all duration-200;
+  }
+  
+  .checkered-flag-animation {
+    background-size: 20px 20px;
+    @apply bg-checkered-pattern animate-checkered-flag;
+  }
+  
+  .racing-underline {
+    @apply relative inline-block;
+  }
+  
+  .racing-underline::after {
+    content: '';
+    @apply absolute bottom-0 left-0 h-[2px] w-0 bg-f1-red transition-all duration-300 ease-out;
+  }
+  
+  .racing-underline:hover::after {
+    @apply w-full;
+  }
+  
+  .telemetry-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
+  }
+  
+  .analysis-wrapper {
+    @apply px-4 py-6 md:p-8;
+  }
+  
+  .analysis-form {
+    @apply card-glass p-6 mb-8;
+  }
+  
+  .results-container {
+    @apply card-glass p-6;
+  }
+  
+  .sidebar-item {
+    @apply flex items-center space-x-3 px-4 py-3 rounded-md transition-colors duration-200 hover:bg-f1-dark;
+  }
+  
+  .sidebar-item.active {
+    @apply bg-f1-dark text-white border-l-2 border-f1-red;
+  }
+  
+  .page-transition-enter {
+    @apply opacity-0;
+  }
+  
+  .page-transition-enter-active {
+    @apply opacity-100 transition-opacity duration-300;
+  }
+  
+  .page-transition-exit {
+    @apply opacity-100;
+  }
+  
+  .page-transition-exit-active {
+    @apply opacity-0 transition-opacity duration-300;
+  }
+}
