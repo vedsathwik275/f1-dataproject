@@ -81,33 +81,50 @@ class FastF1Client:
     
     def get_race_calendar(self, year):
         """
-        Get the F1 race calendar for a specific year
+        Get the race calendar for a specific year
         
         Args:
-            year (int): The year to get the calendar for
+            year (int): Year to get calendar for
             
         Returns:
-            list: List of race information dictionaries
+            list: List of races in the calendar with metadata
         """
         try:
-            print(f"[CHECKPOINT] Fetching {year} race calendar from FastF1...")
+            print(f"[CHECKPOINT] Fetching race calendar for {year}...")
             schedule = fastf1.get_event_schedule(year)
             
-            races = []
-            for idx, event in schedule.iterrows():
-                race_info = {
-                    'name': event['EventName'],
+            if schedule.empty:
+                print(f"[WARNING] No race calendar found for {year}")
+                return []
+            
+            calendar = []
+            for index, event in schedule.iterrows():
+                race_data = {
+                    'round': event['RoundNumber'],
+                    'gp_name': event['EventName'],
                     'country': event['Country'],
                     'location': event['Location'],
-                    'date': event['EventDate'].strftime('%Y-%m-%d'),
-                    'round': event['RoundNumber']
+                    'date': event['EventDate'].strftime('%Y-%m-%d') if pd.notna(event['EventDate']) else None,
+                    'sessions': {}
                 }
-                races.append(race_info)
+                
+                # Add session information if available
+                for session_type in ['FP1', 'FP2', 'FP3', 'Q', 'S', 'R']:
+                    if f"{session_type}Date" in event and pd.notna(event[f"{session_type}Date"]):
+                        race_data['sessions'][session_type] = {
+                            'date': event[f"{session_type}Date"].strftime('%Y-%m-%d'),
+                            'time': event[f"{session_type}Time"].strftime('%H:%M:%S') if pd.notna(event[f"{session_type}Time"]) else None
+                        }
+                
+                calendar.append(race_data)
             
-            print(f"[SUCCESS] Found {len(races)} races in {year}")
-            return races
+            print(f"[SUCCESS] Found {len(calendar)} races in {year} calendar")
+            return calendar
+            
         except Exception as e:
-            print(f"[ERROR] Failed to fetch race calendar: {e}")
+            print(f"[ERROR] Failed to get race calendar: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return []
     
     def get_drivers(self, year):
@@ -126,7 +143,7 @@ class FastF1Client:
             if not calendar:
                 return []
             
-            first_race = calendar[0]['name']
+            first_race = calendar[0]['gp_name']
             session = self._get_session(year, first_race, 'R')
             
             if session is None:
@@ -279,13 +296,30 @@ class FastF1Client:
                 }
                 driver_results.append(driver_result)
             
-            # Extract race information
+            # Safely extract race information
+            event_info = session.event.to_dict() if hasattr(session, 'event') else {}
+            
+            # Check for different possible field names for circuit
+            circuit_name = None
+            if 'CircuitName' in event_info:
+                circuit_name = event_info['CircuitName']
+            elif 'OfficialName' in event_info:
+                circuit_name = event_info['OfficialName']
+            elif 'Location' in event_info:
+                circuit_name = event_info['Location']
+            else:
+                circuit_name = gp_name + " Circuit"  # Fallback
+                
+            # Check for country
+            country = event_info.get('Country', '')
+            
+            # Create race info dictionary
             race_info = {
                 'year': year,
                 'gp_name': gp_name,
-                'date': session.date.strftime('%Y-%m-%d'),
-                'circuit': session.event['CircuitName'],
-                'country': session.event['Country'],
+                'date': session.date.strftime('%Y-%m-%d') if hasattr(session, 'date') else '',
+                'circuit': circuit_name,
+                'country': country,
                 'results': driver_results
             }
             
@@ -293,6 +327,8 @@ class FastF1Client:
             return race_info
         except Exception as e:
             print(f"[ERROR] Failed to extract race data: {e}")
+            import traceback
+            traceback.print_exc()  # Print the full traceback for debugging
             return None
     
     def get_qualifying_data(self, year, gp_name):
@@ -452,4 +488,91 @@ class FastF1Client:
             return lap_info
         except Exception as e:
             print(f"[ERROR] Failed to extract telemetry data: {e}")
+            return None
+    
+    def get_session_data(self, year, gp_name, session_type, driver_code):
+        """
+        Get session data for a specific driver
+        
+        Args:
+            year (int): Year of the session
+            gp_name (str): Grand Prix name
+            session_type (str): Session type (e.g., 'R' for race, 'Q' for qualifying)
+            driver_code (str): Driver code
+            
+        Returns:
+            dict: Dictionary containing driver data for the session
+        """
+        try:
+            # Create the session
+            session = fastf1.get_session(year, gp_name, session_type)
+            
+            # Load the session data
+            session.load()
+            
+            # Get the driver data
+            driver_data = session.laps.pick_driver(driver_code)
+            
+            if driver_data.empty:
+                print(f"[ERROR] No data found for driver {driver_code} in {year} {gp_name} {session_type}")
+                return None
+            
+            # Get telemetry data if available
+            telemetry = None
+            try:
+                fastest_lap = driver_data.pick_fastest()
+                if not fastest_lap.empty:
+                    telemetry = fastest_lap.get_telemetry()
+            except Exception as e:
+                print(f"[WARNING] Could not get telemetry data: {e}")
+            
+            # Create a dictionary with the data
+            result = {
+                'driver': driver_code,
+                'name': session.get_driver(driver_code)['FullName'] if driver_code in session.drivers else 'Unknown',
+                'team': session.get_driver(driver_code)['TeamName'] if driver_code in session.drivers else 'Unknown',
+                'year': year,
+                'gp_name': gp_name,
+                'session_type': session_type,
+                'fastest_lap_time': driver_data['LapTime'].min().total_seconds() if not driver_data['LapTime'].empty else None,
+                'fastest_lap_number': driver_data.loc[driver_data['LapTime'].idxmin()]['LapNumber'] if not driver_data['LapTime'].empty else None,
+                'position': session.results[session.results['Abbreviation'] == driver_code]['Position'].values[0] if not session.results.empty and driver_code in session.results['Abbreviation'].values else None,
+                'status': session.results[session.results['Abbreviation'] == driver_code]['Status'].values[0] if not session.results.empty and driver_code in session.results['Abbreviation'].values else None,
+                'laps': []
+            }
+            
+            # Add lap data
+            for _, lap in driver_data.iterrows():
+                lap_data = {
+                    'lap_number': lap['LapNumber'],
+                    'lap_time': lap['LapTime'].total_seconds() if pd.notna(lap['LapTime']) else None,
+                    'sector_1': lap['Sector1Time'].total_seconds() if pd.notna(lap['Sector1Time']) else None,
+                    'sector_2': lap['Sector2Time'].total_seconds() if pd.notna(lap['Sector2Time']) else None,
+                    'sector_3': lap['Sector3Time'].total_seconds() if pd.notna(lap['Sector3Time']) else None,
+                    'compound': lap['Compound'],
+                    'tyre_life': lap['TyreLife'],
+                    'fresh_tyre': lap['FreshTyre'],
+                    'time': lap['Time'].isoformat() if pd.notna(lap['Time']) else None,
+                    'track_status': lap['TrackStatus']
+                }
+                result['laps'].append(lap_data)
+            
+            # Add telemetry data if available
+            if telemetry is not None and not telemetry.empty:
+                result['telemetry'] = {
+                    'time': [t.total_seconds() for t in telemetry['Time']],
+                    'speed': telemetry['Speed'].tolist(),
+                    'throttle': telemetry['Throttle'].tolist(),
+                    'brake': telemetry['Brake'].tolist(),
+                    'gear': telemetry['nGear'].tolist(),
+                    'rpm': telemetry['RPM'].tolist(),
+                    'distance': telemetry['Distance'].tolist()
+                }
+            
+            return result
+            
+        except Exception as e:
+            print(f"[ERROR] Failed to get session data: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return None 

@@ -98,59 +98,65 @@ def visualize_driver_performance(data, filename_prefix):
     lap_numbers = [lap['lap_number'] for lap in data['lap_times']]
     lap_times = [lap['lap_time'] for lap in data['lap_times']]
     
-    # Create a pandas DataFrame for easier plotting
+    # Create a pandas DataFrame for easier filtering and plotting
     df = pd.DataFrame({
         'Lap': lap_numbers,
         'LapTime': lap_times
     })
     
+    # Filter out extreme outliers - laps more than 3x the median lap time
+    # (excluding the already filtered out NaN lap times)
+    median_lap_time = df['LapTime'].median()
+    df_filtered = df[df['LapTime'] < median_lap_time * 3]
+    
     # Create figure with multiple subplots
-    fig = plt.figure(figsize=(20, 15))
+    fig = plt.figure(figsize=(16, 14))  # Reduced height to help with layout
     gs = gridspec.GridSpec(3, 2, height_ratios=[2, 1, 1])
     
-    # Plot lap times
+    # Plot lap times (using filtered data)
     ax1 = plt.subplot(gs[0, :])
-    sns.lineplot(x='Lap', y='LapTime', data=df, marker='o', color=F1_COLORS.get(team, 'blue'), linewidth=2, ax=ax1)
+    sns.lineplot(x='Lap', y='LapTime', data=df_filtered, marker='o', color=F1_COLORS.get(team, 'blue'), linewidth=2, ax=ax1)
     ax1.set_title(f"{driver_name} ({driver_code}) - {year} {gp_name} {session_name}", fontsize=16)
     ax1.set_xlabel('Lap Number', fontsize=12)
     ax1.set_ylabel('Lap Time (seconds)', fontsize=12)
     ax1.grid(True)
     
     # Highlight fastest lap
-    if data['performance']['fastest_lap_number'] in lap_numbers:
-        fastest_lap_idx = lap_numbers.index(data['performance']['fastest_lap_number'])
-        ax1.plot(data['performance']['fastest_lap_number'], lap_times[fastest_lap_idx], 'ro', markersize=10, label='Fastest Lap')
+    if data['performance']['fastest_lap_number'] in df_filtered['Lap'].values:
+        fastest_idx = df_filtered[df_filtered['Lap'] == data['performance']['fastest_lap_number']].index[0]
+        fastest_lap_time = df_filtered.iloc[fastest_idx]['LapTime']
+        ax1.plot(data['performance']['fastest_lap_number'], fastest_lap_time, 'ro', markersize=10, label='Fastest Lap')
         ax1.legend()
     
     # Plot sector times if available
     if data['sector_times']:
         ax2 = plt.subplot(gs[1, 0])
         
-        sector_df = pd.DataFrame([
-            {
-                'Lap': sector['lap_number'],
-                'Sector': 'Sector 1',
-                'Time': sector['sector_1']
-            } for sector in data['sector_times']
-        ] + [
-            {
-                'Lap': sector['lap_number'],
-                'Sector': 'Sector 2',
-                'Time': sector['sector_2']
-            } for sector in data['sector_times']
-        ] + [
-            {
-                'Lap': sector['lap_number'],
-                'Sector': 'Sector 3',
-                'Time': sector['sector_3']
-            } for sector in data['sector_times']
-        ])
+        # Create a DataFrame for sector times
+        sector_times = []
+        for sector in data['sector_times']:
+            lap_num = sector['lap_number']
+            # Skip outlier laps
+            if lap_num in df_filtered['Lap'].values:
+                sector_times.extend([
+                    {'Lap': lap_num, 'Sector': 'Sector 1', 'Time': sector['sector_1']},
+                    {'Lap': lap_num, 'Sector': 'Sector 2', 'Time': sector['sector_2']},
+                    {'Lap': lap_num, 'Sector': 'Sector 3', 'Time': sector['sector_3']}
+                ])
         
-        sns.lineplot(x='Lap', y='Time', hue='Sector', data=sector_df, marker='o', ax=ax2)
-        ax2.set_title('Sector Times', fontsize=14)
-        ax2.set_xlabel('Lap Number', fontsize=12)
-        ax2.set_ylabel('Sector Time (seconds)', fontsize=12)
-        ax2.grid(True)
+        sector_df = pd.DataFrame(sector_times)
+        
+        # Plot if we have sector data
+        if not sector_df.empty:
+            # Group by sector to get separate lines
+            for sector_name, group in sector_df.groupby('Sector'):
+                ax2.plot(group['Lap'], group['Time'], 'o-', label=sector_name, linewidth=1.5, markersize=4)
+            
+            ax2.set_title('Sector Times', fontsize=14)
+            ax2.set_xlabel('Lap Number', fontsize=12)
+            ax2.set_ylabel('Sector Time (seconds)', fontsize=12)
+            ax2.grid(True)
+            ax2.legend()
     
     # Plot tire compounds if available
     if data['tire_data']:
@@ -165,22 +171,38 @@ def visualize_driver_performance(data, filename_prefix):
             'WET': 'blue'
         }
         
-        # Create a tire usage plot
-        for i, tire in enumerate(data['tire_data']):
+        # Consolidate tire data - group by compound
+        consolidated_tires = {}
+        for tire in data['tire_data']:
             compound = tire['compound']
             laps = tire['laps']
-            if laps:
-                ax3.plot([min(laps), max(laps)], [i, i], linewidth=10, 
+            
+            if not laps:
+                continue
+                
+            if compound not in consolidated_tires:
+                consolidated_tires[compound] = []
+            
+            # Add this stint
+            consolidated_tires[compound].append((min(laps), max(laps)))
+        
+        # Plot consolidated tire data
+        for i, (compound, stints) in enumerate(consolidated_tires.items()):
+            for j, (start_lap, end_lap) in enumerate(stints):
+                ax3.plot([start_lap, end_lap], [i, i], linewidth=10, 
                         color=compound_colors.get(compound, 'gray'), 
                         solid_capstyle='butt', 
-                        label=f"{compound} (Life: {tire['tyre_life']})")
+                        label=f"{compound}" if j == 0 else "")
         
-        ax3.set_yticks(range(len(data['tire_data'])))
-        ax3.set_yticklabels([])
+        ax3.set_yticks(range(len(consolidated_tires)))
+        ax3.set_yticklabels(consolidated_tires.keys())
         ax3.set_title('Tire Compounds Used', fontsize=14)
         ax3.set_xlabel('Lap Number', fontsize=12)
         ax3.grid(True)
-        ax3.legend()
+        # Use a more compact legend with unique entries only
+        handles, labels = ax3.get_legend_handles_labels()
+        by_label = dict(zip(labels, handles))
+        ax3.legend(by_label.values(), by_label.keys())
     
     # Add information text box
     info_text = (
@@ -204,8 +226,9 @@ def visualize_driver_performance(data, filename_prefix):
     ax4.text(0.5, 0.5, info_text, ha='center', va='center', fontsize=14, 
              bbox=dict(facecolor='white', alpha=0.8, boxstyle='round,pad=1'))
     
-    # Adjust layout and save figure
-    plt.tight_layout()
+    # Use a more robust approach for layout
+    plt.tight_layout(h_pad=3, w_pad=3)
+    plt.subplots_adjust(top=0.95, bottom=0.05, hspace=0.3)
     
     # Create filename and save
     filename = f"{filename_prefix}.png"
@@ -276,8 +299,8 @@ def visualize_race_results(data, filename_prefix):
         
         # Create data for grid vs finish
         grid_finish_df = results_df[['driver_code', 'grid', 'position']]
-        grid_finish_df['grid'] = pd.to_numeric(grid_finish_df['grid'], errors='coerce')
-        grid_finish_df['position'] = pd.to_numeric(grid_finish_df['position'], errors='coerce')
+        grid_finish_df.loc[:, 'grid'] = pd.to_numeric(grid_finish_df['grid'], errors='coerce')
+        grid_finish_df.loc[:, 'position'] = pd.to_numeric(grid_finish_df['position'], errors='coerce')
         
         # Remove any rows with NaN values
         grid_finish_df = grid_finish_df.dropna()

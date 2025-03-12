@@ -12,7 +12,7 @@ def main():
     """Run the F1 Analyzer application."""
     print("Starting F1 Data Analyzer...")
     analyzer = F1Analyzer()
-    analyzer.run_interactive()
+    analyzer.run()
 
 if __name__ == "__main__":
     main() 

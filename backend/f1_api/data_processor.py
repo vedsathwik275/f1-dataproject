@@ -72,39 +72,95 @@ def process_driver_performance(fastf1_data, openf1_data):
     
     # Process lap times
     laps = fastf1_data.get('laps', [])
+    
+    # Calculate median lap time to help filter outliers (ignore zeros and nulls)
+    valid_times = [lap.get('lap_time') for lap in laps if lap.get('lap_time') and lap.get('lap_time') > 0]
+    if valid_times:
+        median_lap_time = sorted(valid_times)[len(valid_times) // 2]
+        # Set a reasonable threshold to filter out formation laps, in-lap, out-lap
+        # Usually these can be several times longer than normal laps
+        max_valid_time = median_lap_time * 1.5
+    else:
+        max_valid_time = float('inf')
+    
     for lap in laps:
+        lap_time = lap.get('lap_time')
+        
+        # Skip laps with no time or extremely long laps
+        if not lap_time or lap_time <= 0 or lap_time > max_valid_time:
+            continue
+            
         # Add lap time data
         result['lap_times'].append({
             'lap_number': lap.get('lap_number'),
-            'lap_time': lap.get('lap_time')
+            'lap_time': lap_time
         })
         
-        # Add sector time data if available
-        if lap.get('sector_1') is not None and lap.get('sector_2') is not None and lap.get('sector_3') is not None:
+        # Add sector time data if available and reasonable
+        s1 = lap.get('sector_1')
+        s2 = lap.get('sector_2')
+        s3 = lap.get('sector_3')
+        
+        if (s1 is not None and s2 is not None and s3 is not None and
+            s1 > 0 and s2 > 0 and s3 > 0 and
+            s1 + s2 + s3 <= lap_time * 1.05):  # Allow for small rounding errors
+            
             result['sector_times'].append({
                 'lap_number': lap.get('lap_number'),
-                'sector_1': lap.get('sector_1'),
-                'sector_2': lap.get('sector_2'),
-                'sector_3': lap.get('sector_3')
+                'sector_1': s1,
+                'sector_2': s2,
+                'sector_3': s3
             })
+    
+    # Sort lap times and sector times by lap number
+    result['lap_times'].sort(key=lambda x: x['lap_number'])
+    result['sector_times'].sort(key=lambda x: x['lap_number'])
+    
+    # Process tire data
+    tire_stints = {}
+    for lap in laps:
+        compound = lap.get('compound')
+        lap_number = lap.get('lap_number')
         
-        # Add tire data if available
-        if lap.get('compound') is not None:
-            # Check if we already have this tire in our list
-            found = False
-            for tire in result['tire_data']:
-                if tire['compound'] == lap.get('compound') and tire['tyre_life'] == lap.get('tyre_life'):
-                    tire['laps'].append(lap.get('lap_number'))
-                    found = True
-                    break
+        if not compound or not lap_number:
+            continue
             
-            if not found:
-                result['tire_data'].append({
-                    'compound': lap.get('compound'),
-                    'tyre_life': lap.get('tyre_life'),
-                    'fresh_tyre': lap.get('fresh_tyre'),
-                    'laps': [lap.get('lap_number')]
-                })
+        # Group by compound
+        if compound not in tire_stints:
+            tire_stints[compound] = []
+            
+        # Add lap to the compound's list
+        tire_stints[compound].append(lap_number)
+    
+    # Convert to stints (continuous lap ranges)
+    for compound, lap_numbers in tire_stints.items():
+        # Sort laps
+        lap_numbers.sort()
+        
+        # Find continuous ranges
+        stints = []
+        current_stint = []
+        
+        for lap in lap_numbers:
+            if not current_stint or lap == current_stint[-1] + 1:
+                current_stint.append(lap)
+            else:
+                if current_stint:
+                    stints.append(current_stint)
+                current_stint = [lap]
+        
+        # Add the last stint
+        if current_stint:
+            stints.append(current_stint)
+        
+        # Add to result
+        for stint in stints:
+            result['tire_data'].append({
+                'compound': compound,
+                'tyre_life': len(stint),  # Approximation of tire life
+                'fresh_tyre': True,  # Assuming first stint starts with fresh tires
+                'laps': stint
+            })
     
     # Add OpenF1 data if available
     if openf1_data:
