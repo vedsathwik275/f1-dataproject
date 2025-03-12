@@ -1,0 +1,10 @@
+fastf1
+requests
+pandas
+matplotlib
+seaborn
+python-dotenv
+numpy
+plotly
+ipywidgets
+tqdm
